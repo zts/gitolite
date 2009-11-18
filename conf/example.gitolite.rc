@@ -9,12 +9,12 @@
 
 # --------------------------------------
 
-# this is where the repos go.  If you provide a relative path (not starting
-# with "/"), it's relative to your $HOME.  You may want to put in something
-# like "/bigdisk" or whatever if your $HOME is too small for the repos, for
-# example
+# this is where the repos go.  This needs to be an absolute path for old gits.
+# See changes in gl-easy-install in this commit for why.  You can put in
+# something like "/bigdisk" or whatever if your $HOME is too small for the
+# repos, but MAKE SURE IT IS AN ABSOLUTE PATH!
 
-$REPO_BASE="repositories";
+$REPO_BASE="$ENV{HOME}/repositories";
 
 # the default umask for repositories is 0077; change this if you run stuff
 # like gitweb and find it can't read the repos.  Please note the syntax;  the

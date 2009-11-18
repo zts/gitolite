@@ -397,9 +397,21 @@ setup_pta() {
     # Substitute $GL_ADMINDIR and $REPO_BASE appropriately.  Note there is no
     # space around the "=" in the second and third lines.
 
-    echo "cd $REPO_BASE/gitolite-admin.git
-GIT_WORK_TREE=$GL_ADMINDIR git add conf/gitolite.conf keydir
-GIT_WORK_TREE=$GL_ADMINDIR git diff --cached --quiet || GIT_WORK_TREE=$GL_ADMINDIR git commit -am start
+    # the following is the only way to do it on older gits that won't do
+    # --work-tree or --git-dir, or corresponding ENV vars.  (Diff with the
+    # main branch to see the normal code).  This change requires that the
+    # REPO_BASE be an absolute value, otherwise you have to do the eqvt of 
+    #   $REPO_BASE =~ m(^/) ? $REPO_BASE : "$ENV{HOME}/$REPO_BASE"
+    # to get the correct value.  And frankly, that's a heck of lot more work
+    # than I want to do right now, and this is easier :)
+
+    echo "cd $GL_ADMINDIR
+git init
+git add conf/gitolite.conf keydir
+git commit -m start
+git remote add origin $REPO_BASE/gitolite-admin.git
+git push origin master
+mv .git unused.git
 " | ssh -p $port $user@$host
 
     # MANUAL: now that the admin repo is created, you have to set the hooks
