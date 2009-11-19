@@ -397,22 +397,20 @@ setup_pta() {
     # Substitute $GL_ADMINDIR and $REPO_BASE appropriately.  Note there is no
     # space around the "=" in the second and third lines.
 
-    # the following is the only way to do it on older gits that won't do
-    # --work-tree or --git-dir, or corresponding ENV vars.  (Diff with the
-    # main branch to see the normal code).  This change requires that the
-    # REPO_BASE be an absolute value, otherwise you have to do the eqvt of 
-    #   $REPO_BASE =~ m(^/) ? $REPO_BASE : "$ENV{HOME}/$REPO_BASE"
-    # to get the correct value.  And frankly, that's a heck of lot more work
-    # than I want to do right now, and this is easier :)
+    # if this works, we dont need the REPO_BASE to be absolute (though no harm
+    # done even if it is)
 
-    echo "cd $GL_ADMINDIR
-git init
-git add conf/gitolite.conf keydir
-git commit -m start
-git remote add origin $REPO_BASE/gitolite-admin.git
-git push origin master
-mv .git unused.git
-" | ssh -p $port $user@$host
+    prompt "cloning gitolite-admin repo..." "$v_cloning"
+
+    cd "$HOME"
+    git clone gitolite:gitolite-admin
+    cd gitolite-admin
+    mkdir conf keydir
+    scp $quiet -P $port $user@$host:$GL_ADMINDIR/conf/gitolite.conf conf
+    scp $quiet -P $port $user@$host:$GL_ADMINDIR/keydir/$admin_name.pub keydir
+    git add conf keydir
+    git commit -am start
+    git push origin master
 
     # MANUAL: now that the admin repo is created, you have to set the hooks
     # properly.  The install program does this.  So cd back to the
@@ -429,7 +427,6 @@ mv .git unused.git
 clone_it()
 {
     cleanup
-    cd "$HOME"
     if [[ -d gitolite-admin ]]
     then
         echo $HOME/gitolite-admin exists, skipping clone step...
