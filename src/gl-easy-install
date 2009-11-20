@@ -403,6 +403,12 @@ setup_pta() {
     prompt "cloning gitolite-admin repo..." "$v_cloning"
 
     cd "$HOME"
+
+    [ -d gitolite-admin ] && {
+        prompt "" "$v_direxists"
+        rm -rf gitolite-admin
+    }
+
     git clone gitolite:gitolite-admin
     cd gitolite-admin
     mkdir conf keydir
@@ -560,6 +566,22 @@ v_cloning="
 now we will clone the gitolite-admin repo to your workstation and see if it
 all hangs together.  We'll do this in your \\\$HOME for now, and you can move
 it elsewhere later if you wish to.
+"
+
+v_direxists="
+you seem to already have a 'gitolite-admin' directory in your \\\$HOME.  I
+need to remove it in order to proceed.  This is not an option -- the 'oldgits'
+branch of gitolite you're using can only work this way.
+
+You have three options:
+
+  - hit Ctrl-C; the script will abort (not recommended)
+  - hit enter; the script will remove the directory and continue (best option
+    if you haven't actually started using gitolite or you are continuing a
+    previous install that aborted for some reason)
+  - from a new shell or your filemanager, rename that directory to something
+    else and *then* hit enter here (if you really need to preserve the
+    contents of that directory for some reason)
 "
 
 tail="

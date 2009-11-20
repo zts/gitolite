@@ -5,6 +5,13 @@
 >   install as well as upgrade a gitolite install.  Please see the INSTALL
 >   document in the doc directory for details]
 
+>   IMPORTANT: this is the "oldgits" branch.  Normal gitolite install requires
+>   1.6 or higher on the server, with 1.6.3 or more being even better.  This
+>   branch was created to support older server side gits (1.5.2 is the oldest
+>   it was tested with).  I'll try and keep it rebased against the latest
+>   master or pu (depending on how stable pu is at that time) but ideally you
+>   should upgrade your server side!
+
 ----
 
 Gitolite is a rewrite of gitosis, with a completely different config file that
