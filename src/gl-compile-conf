@@ -107,7 +107,8 @@ my %rurp_seen = ();
 # catch usernames<->pubkeys mismatches; search for "lint" below
 my %user_list = ();
 
-# gitweb descriptions, plain text, keyed by repo
+# gitweb owners and descriptions, plain text, keyed by repo
+my %owner = ();
 my %desc = ();
 
 # set the umask before creating any files
@@ -254,13 +255,14 @@ sub parse_conf_file
             }
         }
         # very simple syntax for the gitweb description of repo
-        elsif (/^(\S+) = "(.*)"$/)
+        elsif (/^(\S+) ([^=]+?)? ?= "(.*)"$/)
         {
-            my ($repo, $desc) = ($1, $2);
+            my ($repo, $owner, $desc) = ($1, $2, $3);
             die "$ABRT bad repo name $repo\n" unless $repo =~ $REPONAME_PATT;
             die "$WARN $fragment attempting to set description for $repo\n" if
                 $fragment ne 'master' and $fragment ne $repo and ($groups{"\@$fragment"}{$repo} || '') ne 'master';
             $desc{$repo} = $desc;
+            $owner{"$repo.git"} = $owner;
         }
         else
         {
@@ -367,7 +369,8 @@ if (-f $PROJECTS_LIST) {
     my $projlist_fh = wrap_open( "<", $PROJECTS_LIST);
     while(<$projlist_fh>) {
         chomp;
-        $projlist{$_} = 1;
+        my ($repo, $owner) = split;
+        $projlist{$repo} = $owner;
     }
     close $projlist_fh;
 }
@@ -394,9 +397,9 @@ for my $repo (sort keys %repos) {
     my $desc_file = "$repo.git/description";
     # note: having a description also counts as enabling gitweb
     if ($repos{$repo}{'R'}{'gitweb'} or $desc{$repo}) {
-        unless ($projlist{"$repo.git"}) {
+        unless ($projlist{"$repo.git"} and $projlist{"$repo.git"} eq $owner{"$repo.git"}) {
             # not in the old list; add it to the new one
-            $projlist{"$repo.git"} = 1;
+            $projlist{"$repo.git"} = $owner{"$repo.git"} || 1;
             $projlist_changed = 1;
             print "gitweb add $repo.git\n";
         }
@@ -418,7 +421,7 @@ for my $repo (sort keys %repos) {
 if ($projlist_changed) {
     print "updating gitweb project list $PROJECTS_LIST\n";
     my $projlist_fh = wrap_open( ">", $PROJECTS_LIST);
-    print $projlist_fh join("\n", sort keys %projlist), "\n" if %projlist;
+    print $projlist_fh join("\n", map { "$_" . ( $owner{$_} ? " $owner{$_}" : "" ) } sort keys %projlist), "\n" if %projlist;
     close $projlist_fh;
 }
 
